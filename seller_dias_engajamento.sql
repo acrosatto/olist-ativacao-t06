@@ -29,10 +29,9 @@ WITH params AS (
             count(DISTINCT date(o.order_purchase_timestamp))), 0), 2) as taxa_engajamento
 
         FROM olist.orders o
-        LEFT JOIN olist.order_items oi 
+        JOIN olist.order_items oi 
         ON o.order_id = oi.order_id
         CROSS JOIN params p
-        WHERE oi.seller_id IS NOT NULL
         GROUP BY oi.seller_id, p.date_ref
         ORDER BY dias_vendas_total DESC)
 
