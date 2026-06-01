@@ -10,7 +10,7 @@ tb_pedidos AS (
 ),
 tb_seller_rfv AS (
     select  
-        s.seller_id,
+        i.seller_id,
         count(distinct p.order_id) as qtdPedidosVida,
         count(distinct case 
                         when datediff(d.dt_referencia, p.order_purchase_timestamp) <= 28 
@@ -131,9 +131,8 @@ tb_seller_rfv AS (
         max(date_diff(d.dt_referencia, p.order_purchase_timestamp)) as diasDesdePrimeiraVenda       
                           
     from tb_pedidos p
-    left join workspace.olist.order_items i on p.order_id = i.order_id
-    left join workspace.olist.sellers s on i.seller_id = s.seller_id
+    join workspace.olist.order_items i on p.order_id = i.order_id
     cross join tb_data d
-    group by s.seller_id 
+    group by i.seller_id 
 )
 SELECT * FROM tb_seller_rfv
