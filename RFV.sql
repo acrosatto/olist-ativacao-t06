@@ -223,29 +223,29 @@ WITH params AS (
   dias_vida AS (
         SELECT oi.seller_id,
             -- Quantidade de dias venda nos diferentes períodos
-            count(DISTINCT date(o.order_purchase_timestamp)) as dias_vendas_total,
+            count(DISTINCT date(o.order_purchase_timestamp)) as qtdDiasVendastotal,
             count(DISTINCT case when date(o.order_purchase_timestamp) >= date_sub(p.date_ref, 28)
                             AND date(o.order_purchase_timestamp) <= p.date_ref
-                            THEN date(o.order_purchase_timestamp) END) as dias_vendas_D28,
+                            THEN date(o.order_purchase_timestamp) END) as qtdDiasVendasD28,
 
             count(DISTINCT case when date(o.order_purchase_timestamp) >= date_sub(p.date_ref, 56)
                             AND date(o.order_purchase_timestamp) <= p.date_ref
-                            THEN date(o.order_purchase_timestamp) END) as dias_vendas_D56,
+                            THEN date(o.order_purchase_timestamp) END) as qtdDiasVendasD56,
 
             count(DISTINCT case when date(o.order_purchase_timestamp) >= date_sub(p.date_ref, 365)
                             AND date(o.order_purchase_timestamp) <= p.date_ref
-                            THEN date(o.order_purchase_timestamp) END) as dias_vendas_D365,
+                            THEN date(o.order_purchase_timestamp) END) as qtdDiasVendasD365,
 
             -- dias sem vendas                
             datediff(p.date_ref, min(date(o.order_purchase_timestamp))) -
-            count(DISTINCT date(o.order_purchase_timestamp)) as dias_sem_vendas,
+            count(DISTINCT date(o.order_purchase_timestamp)) as qtdDiasSemVendas,
 
             -- dias com venda / dias sem venda na vida total do seller
             round(coalesce(try_divide(
             count(DISTINCT date(o.order_purchase_timestamp)),
 
             datediff(p.date_ref, min(date(o.order_purchase_timestamp))) -
-            count(DISTINCT date(o.order_purchase_timestamp))), 0), 2) as taxa_engajamento
+            count(DISTINCT date(o.order_purchase_timestamp))), 0), 2) as txEngajamento
 
         FROM olist.orders o
         JOIN olist.order_items oi 
@@ -253,7 +253,7 @@ WITH params AS (
         CROSS JOIN params p
         WHERE o.order_purchase_timestamp < p.date_ref
         GROUP BY oi.seller_id, p.date_ref
-        ORDER BY dias_vendas_total DESC)
+        ORDER BY qtdDiasVendastotal DESC)
 
   SELECT * FROM dias_vida
 )
@@ -306,7 +306,7 @@ GROUP BY seller_id
 
 select 
     t.seller_id,
-    round(total_pedidos_periodo/total_pedidos,2) as prop_pedidos_periodo
+    round(total_pedidos_periodo/total_pedidos,2) as txPropPedidosPeriodo
 from total_vendas t
 inner join periodo_vendas p on t.seller_id = p.seller_id
 )
@@ -329,7 +329,7 @@ SELECT
             )
         ),
         0
-    ),2) AS ativacao_por_dia
+    ),2) AS txAtivacaoPorDia
 
 FROM olist.sellers s
 CROSS JOIN params p
@@ -378,7 +378,7 @@ tb_seller_rfv AS (
                 THEN ps.receita
                 ELSE 0
             END
-        ) AS vlReceitaP28,
+        ) AS vlReceitaD28,
 
         SUM(
             CASE
@@ -386,7 +386,7 @@ tb_seller_rfv AS (
                 THEN ps.receita
                 ELSE 0
             END
-        ) AS vlReceitaP56,
+        ) AS vlReceitaD56,
 
         SUM(
             CASE
@@ -394,7 +394,7 @@ tb_seller_rfv AS (
                 THEN ps.receita
                 ELSE 0
             END
-        ) AS vlReceitaP365,
+        ) AS vlReceitaD365,
 
         -- Ticket médio = receita / número de pedidos
         SUM(
@@ -413,7 +413,7 @@ tb_seller_rfv AS (
                 END
             ),
             0
-        ) AS vlTicketMedioP28,
+        ) AS vlTicketMedioD28,
 
         SUM(
             CASE
@@ -431,7 +431,7 @@ tb_seller_rfv AS (
                 END
             ),
             0
-        ) AS vlTicketMedioP56,
+        ) AS vlTicketMedioD56,
 
         SUM(
             CASE
@@ -449,7 +449,7 @@ tb_seller_rfv AS (
                 END
             ),
             0
-        ) AS vlTicketMedioP365
+        ) AS vlTicketMedioD365
 
     FROM tb_pedidos_seller AS ps
     CROSS JOIN tb_intervalos AS inter
