@@ -40,10 +40,7 @@ tb_intervalo_vendas AS (
         SELECT
             seller_id,
             dtVenda,
-            LAG(dtVenda) OVER (
-                PARTITION BY seller_id
-                ORDER BY dtVenda
-            ) AS dtVendaAnterior
+            LAG(dtVenda) OVER (PARTITION BY seller_id ORDER BY dtVenda) AS dtVendaAnterior
 
         FROM (
             SELECT DISTINCT seller_id, dtVenda
@@ -246,7 +243,7 @@ tb_intervalo_vendas AS (
     GROUP BY seller_id
 )
 
-  -- ============================================================
+-- ============================================================
 -- Consolidação das métricas por seller
 -- ============================================================
 SELECT
